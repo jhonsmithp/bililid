@@ -1,395 +1,106 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Video Download Manager</title>
-
-<style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #eef2f7;
-}
-
-.container {
-  max-width: 700px;
-  margin: 50px auto;
-  padding: 15px;
-}
-
-.card {
-  background: white;
-  padding: 25px;
-  border-radius: 18px;
-  box-shadow: 0 8px 30px rgba(0,0,0,.12);
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 25px;
-}
-
-label {
-  display: block;
-  margin: 12px 0 7px;
-  font-weight: bold;
-}
-
-input {
-  width: 100%;
-  padding: 14px;
-  border: 1px solid #ccd2d9;
-  border-radius: 9px;
-  font-size: 15px;
-}
-
-button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 12px;
-  border: none;
-  border-radius: 9px;
-  background: #087f5b;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-button:hover {
-  opacity: .9;
-}
-
-.result {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 10px;
-  background: #f4f6f8;
-  display: none;
-}
-
-.download {
-  background: #1565c0;
-}
-
-.error {
-  color: #c62828;
-}
-
-.success {
-  color: #087f5b;
-}
-
-.progressBox {
-  display: none;
-  margin-top: 20px;
-}
-
-.progress {
-  width: 100%;
-  height: 18px;
-  background: #ddd;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.progressBar {
-  width: 0%;
-  height: 100%;
-  background: #087f5b;
-}
-
-.percent {
-  text-align: center;
-  margin-top: 6px;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Stream URL Extractor</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .container { background-color: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 600px; text-align: center; }
+        h2 { color: #38bdf8; margin-bottom: 20px; }
+        input[type="text"] { width: 100%; padding: 12px 15px; border: 2px solid #334155; border-radius: 8px; background-color: #0f172a; color: #fff; font-size: 16px; outline: none; margin-bottom: 15px; }
+        input[type="text"]:focus { border-color: #38bdf8; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: #0284c7; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #0369a1; }
+        #status { margin-top: 15px; font-size: 14px; color: #94a3b8; }
+        #result-box { margin-top: 20px; display: none; background: #0f172a; padding: 15px; border-radius: 8px; text-align: left; word-break: break-all; }
+        .url-text { font-family: monospace; color: #4ade80; font-size: 13px; margin-bottom: 15px; background: #1e293b; padding: 10px; border-radius: 5px; max-height: 100px; overflow-y: auto; }
+        .btn-download { display: inline-block; width: 100%; text-align: center; background-color: #22c55e; color: #fff; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: bold; }
+        .btn-download:hover { background-color: #16a34a; }
+    </style>
 </head>
-
 <body>
 
 <div class="container">
+    <h2>Video URL Extractor</h2>
+    <p style="color: #cbd5e1; font-size: 14px;">Bilibili বা অন্য যেকোনো ভিডিও লিংক দিন</p>
+    
+    <input type="text" id="videoUrl" placeholder="https://bili.im/... অথবা ভিডিও লিংক পেস্ট করুন">
+    <button onclick="extractUrl()">ডাইরেক্ট URL বের করুন</button>
+    
+    <div id="status"></div>
 
-<div class="card">
-
-<h1>📥 Video Download Manager</h1>
-
-<label>ভিডিও পেজ URL</label>
-
-<input
-id="pageUrl"
-type="url"
-placeholder="https://www.bilibili.tv/..."
->
-
-<button onclick="openVideo()">
-🔎 Check Video
-</button>
-
-
-<label>Direct Download URL</label>
-
-<input
-id="downloadUrl"
-type="url"
-placeholder="https://example.com/video.mp4"
->
-
-<label>File Name</label>
-
-<input
-id="fileName"
-type="text"
-value="video.mp4"
->
-
-<button
-class="download"
-onclick="downloadVideo()"
->
-⬇️ Download
-</button>
-
-
-<div id="result" class="result"></div>
-
-<div id="progressBox" class="progressBox">
-
-<div class="progress">
-<div id="progressBar" class="progressBar"></div>
+    <div id="result-box">
+        <label style="color: #94a3b8; font-size: 12px;">ডাইরেক্ট স্ট্রিমিং URL:</label>
+        <div class="url-text" id="directUrl"></div>
+        <a href="#" id="downloadBtn" target="_blank" class="btn-download">ভিডিও লিঙ্ক খুলুন / ডাউনলোড করুন</a>
+    </div>
 </div>
-
-<div id="percent" class="percent">
-0%
-</div>
-
-</div>
-
-</div>
-
-</div>
-
 
 <script>
+async function extractUrl() {
+    const inputUrl = document.getElementById('videoUrl').value.trim();
+    const status = document.getElementById('status');
+    const resultBox = document.getElementById('result-box');
+    const directUrlDiv = document.getElementById('directUrl');
+    const downloadBtn = document.getElementById('downloadBtn');
 
-function openVideo() {
-
-    const url =
-        document.getElementById("pageUrl").value.trim();
-
-    const result =
-        document.getElementById("result");
-
-    if (!url) {
-
-        result.style.display = "block";
-
-        result.innerHTML =
-            '<span class="error">❌ URL দিন</span>';
-
+    if (!inputUrl) {
+        status.innerText = "অনুগ্রহ করে একটি সঠিক লিঙ্ক দিন!";
+        status.style.color = "#ef4444";
         return;
     }
+
+    status.innerText = "লিঙ্ক প্রসেস করা হচ্ছে, অপেক্ষা করুন...";
+    status.style.color = "#38bdf8";
+    resultBox.style.display = "none";
 
     try {
+        // Step 1: Use CORS Proxy to resolve short link or fetch target HTML
+        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(inputUrl);
+        const response = await fetch(proxyUrl);
+        
+        if (!response.ok) throw new Error("নেটওয়ার্ক রেসপন্স সঠিক নয়");
+        
+        const htmlText = await response.text();
 
-        new URL(url);
+        // Step 2: Search for video/mp4, m3u8 or media source in HTML content
+        let directMediaUrl = "";
 
-    } catch {
+        // Regex patterns to match video streams
+        const m3u8Match = htmlText.match(/https?:\/\/[^"'\s]+\.m3u8[^"'\s]*/i);
+        const mp4Match = htmlText.match(/https?:\/\/[^"'\s]+\.mp4[^"'\s]*/i);
+        const bilibiliMediaMatch = htmlText.match(/https?:\/\/[^"'\s]+\.(bstarstatic|hdslb)[^"'\s]*/i);
 
-        result.style.display = "block";
-
-        result.innerHTML =
-            '<span class="error">❌ সঠিক URL দিন</span>';
-
-        return;
-    }
-
-    result.style.display = "block";
-
-    result.innerHTML =
-        '<span class="success">✅ URL ঠিক আছে</span>' +
-        '<br><br>' +
-        'ভিডিও পেজটি নতুন ট্যাবে খোলা হচ্ছে...';
-
-    window.open(url, "_blank");
-
-}
-
-
-async function downloadVideo() {
-
-    const url =
-        document.getElementById("downloadUrl").value.trim();
-
-    let fileName =
-        document.getElementById("fileName").value.trim();
-
-    const result =
-        document.getElementById("result");
-
-    const progressBox =
-        document.getElementById("progressBox");
-
-    const progressBar =
-        document.getElementById("progressBar");
-
-    const percent =
-        document.getElementById("percent");
-
-
-    if (!url) {
-
-        result.style.display = "block";
-
-        result.innerHTML =
-            '<span class="error">' +
-            '❌ Direct Download URL দিন' +
-            '</span>';
-
-        return;
-    }
-
-
-    if (!fileName) {
-
-        fileName = "video.mp4";
-
-    }
-
-
-    result.style.display = "block";
-
-    result.innerHTML =
-        "⏳ Download শুরু হচ্ছে...";
-
-    progressBox.style.display = "block";
-
-
-    try {
-
-        const response =
-            await fetch(url);
-
-        if (!response.ok) {
-
-            throw new Error(
-                "HTTP " + response.status
-            );
-
+        if (m3u8Match) {
+            directMediaUrl = m3u8Match[0];
+        } else if (mp4Match) {
+            directMediaUrl = mp4Match[0];
+        } else if (bilibiliMediaMatch) {
+            directMediaUrl = bilibiliMediaMatch[0];
         }
 
-
-        const total =
-            response.headers.get(
-                "content-length"
-            );
-
-
-        const reader =
-            response.body.getReader();
-
-
-        const chunks = [];
-
-        let received = 0;
-
-
-        while (true) {
-
-            const {
-                done,
-                value
-            } = await reader.read();
-
-
-            if (done) break;
-
-
-            chunks.push(value);
-
-            received += value.length;
-
-
-            if (total) {
-
-                const p =
-                    Math.round(
-                        received / total * 100
-                    );
-
-
-                progressBar.style.width =
-                    p + "%";
-
-                percent.innerText =
-                    p + "%";
-
-            }
-
+        if (directMediaUrl) {
+            // Clean up backslashes if escaped in JSON string
+            directMediaUrl = directMediaUrl.replace(/\\/g, '');
+            
+            directUrlDiv.innerText = directMediaUrl;
+            downloadBtn.href = directMediaUrl;
+            resultBox.style.display = "block";
+            status.innerText = "সফলভাবে URL পাওয়া গেছে!";
+            status.style.color = "#22c55e";
+        } else {
+            status.innerText = "সরাসরি মিডিয়া ফাইল পাওয়া যায়নি। পেজটিতে প্রটেক্টেড বা ডায়নামিক প্লেয়ার ব্যবহার করা হয়েছে।";
+            status.style.color = "#f59e0b";
         }
 
-
-        const blob =
-            new Blob(chunks);
-
-
-        const blobUrl =
-            URL.createObjectURL(blob);
-
-
-        const a =
-            document.createElement("a");
-
-
-        a.href = blobUrl;
-
-        a.download = fileName;
-
-
-        document.body.appendChild(a);
-
-        a.click();
-
-        a.remove();
-
-
-        URL.revokeObjectURL(blobUrl);
-
-
-        progressBar.style.width =
-            "100%";
-
-        percent.innerText =
-            "100%";
-
-
-        result.innerHTML =
-            '<span class="success">' +
-            '✅ Download সম্পন্ন হয়েছে' +
-            '</span>';
-
-    }
-
-    catch(error) {
-
+    } catch (error) {
+        status.innerText = "ত্রুটি ঘটেছে! লিঙ্কটির স্ট্রিম এক্সট্র্যাক্ট করা সম্ভব হয়নি।";
+        status.style.color = "#ef4444";
         console.error(error);
-
-
-        result.innerHTML =
-            '<span class="error">' +
-            '❌ Download করা যায়নি।<br><br>' +
-            'Direct URL-এ CORS অনুমতি থাকতে হবে।' +
-            '</span>';
-
     }
-
 }
-
 </script>
 
 </body>
