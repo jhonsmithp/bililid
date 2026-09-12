@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Video Download Manager</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #eef2f7;
+}
+
+.container {
+  max-width: 700px;
+  margin: 50px auto;
+  padding: 15px;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.12);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+label {
+  display: block;
+  margin: 12px 0 7px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #ccd2d9;
+  border-radius: 9px;
+  font-size: 15px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 9px;
+  background: #087f5b;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: .9;
+}
+
+.result {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 10px;
+  background: #f4f6f8;
+  display: none;
+}
+
+.download {
+  background: #1565c0;
+}
+
+.error {
+  color: #c62828;
+}
+
+.success {
+  color: #087f5b;
+}
+
+.progressBox {
+  display: none;
+  margin-top: 20px;
+}
+
+.progress {
+  width: 100%;
+  height: 18px;
+  background: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progressBar {
+  width: 0%;
+  height: 100%;
+  background: #087f5b;
+}
+
+.percent {
+  text-align: center;
+  margin-top: 6px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h1>📥 Video Download Manager</h1>
+
+<label>ভিডিও পেজ URL</label>
+
+<input
+id="pageUrl"
+type="url"
+placeholder="https://www.bilibili.tv/..."
+>
+
+<button onclick="openVideo()">
+🔎 Check Video
+</button>
+
+
+<label>Direct Download URL</label>
+
+<input
+id="downloadUrl"
+type="url"
+placeholder="https://example.com/video.mp4"
+>
+
+<label>File Name</label>
+
+<input
+id="fileName"
+type="text"
+value="video.mp4"
+>
+
+<button
+class="download"
+onclick="downloadVideo()"
+>
+⬇️ Download
+</button>
+
+
+<div id="result" class="result"></div>
+
+<div id="progressBox" class="progressBox">
+
+<div class="progress">
+<div id="progressBar" class="progressBar"></div>
+</div>
+
+<div id="percent" class="percent">
+0%
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+function openVideo() {
+
+    const url =
+        document.getElementById("pageUrl").value.trim();
+
+    const result =
+        document.getElementById("result");
+
+    if (!url) {
+
+        result.style.display = "block";
+
+        result.innerHTML =
+            '<span class="error">❌ URL দিন</span>';
+
+        return;
+    }
+
+    try {
+
+        new URL(url);
+
+    } catch {
+
+        result.style.display = "block";
+
+        result.innerHTML =
+            '<span class="error">❌ সঠিক URL দিন</span>';
+
+        return;
+    }
+
+    result.style.display = "block";
+
+    result.innerHTML =
+        '<span class="success">✅ URL ঠিক আছে</span>' +
+        '<br><br>' +
+        'ভিডিও পেজটি নতুন ট্যাবে খোলা হচ্ছে...';
+
+    window.open(url, "_blank");
+
+}
+
+
+async function downloadVideo() {
+
+    const url =
+        document.getElementById("downloadUrl").value.trim();
+
+    let fileName =
+        document.getElementById("fileName").value.trim();
+
+    const result =
+        document.getElementById("result");
+
+    const progressBox =
+        document.getElementById("progressBox");
+
+    const progressBar =
+        document.getElementById("progressBar");
+
+    const percent =
+        document.getElementById("percent");
+
+
+    if (!url) {
+
+        result.style.display = "block";
+
+        result.innerHTML =
+            '<span class="error">' +
+            '❌ Direct Download URL দিন' +
+            '</span>';
+
+        return;
+    }
+
+
+    if (!fileName) {
+
+        fileName = "video.mp4";
+
+    }
+
+
+    result.style.display = "block";
+
+    result.innerHTML =
+        "⏳ Download শুরু হচ্ছে...";
+
+    progressBox.style.display = "block";
+
+
+    try {
+
+        const response =
+            await fetch(url);
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " + response.status
+            );
+
+        }
+
+
+        const total =
+            response.headers.get(
+                "content-length"
+            );
+
+
+        const reader =
+            response.body.getReader();
+
+
+        const chunks = [];
+
+        let received = 0;
+
+
+        while (true) {
+
+            const {
+                done,
+                value
+            } = await reader.read();
+
+
+            if (done) break;
+
+
+            chunks.push(value);
+
+            received += value.length;
+
+
+            if (total) {
+
+                const p =
+                    Math.round(
+                        received / total * 100
+                    );
+
+
+                progressBar.style.width =
+                    p + "%";
+
+                percent.innerText =
+                    p + "%";
+
+            }
+
+        }
+
+
+        const blob =
+            new Blob(chunks);
+
+
+        const blobUrl =
+            URL.createObjectURL(blob);
+
+
+        const a =
+            document.createElement("a");
+
+
+        a.href = blobUrl;
+
+        a.download = fileName;
+
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        a.remove();
+
+
+        URL.revokeObjectURL(blobUrl);
+
+
+        progressBar.style.width =
+            "100%";
+
+        percent.innerText =
+            "100%";
+
+
+        result.innerHTML =
+            '<span class="success">' +
+            '✅ Download সম্পন্ন হয়েছে' +
+            '</span>';
+
+    }
+
+    catch(error) {
+
+        console.error(error);
+
+
+        result.innerHTML =
+            '<span class="error">' +
+            '❌ Download করা যায়নি।<br><br>' +
+            'Direct URL-এ CORS অনুমতি থাকতে হবে।' +
+            '</span>';
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
