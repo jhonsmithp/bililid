@@ -3,130 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bilibili Video Extractor</title>
+    <title>Direct Video Stream Extractor</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
         .container { background-color: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 650px; text-align: center; }
-        h2 { color: #38bdf8; margin-bottom: 20px; }
+        h2 { color: #38bdf8; margin-bottom: 10px; }
+        p { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
         input[type="text"] { width: 100%; padding: 12px 15px; border: 2px solid #334155; border-radius: 8px; background-color: #0f172a; color: #fff; font-size: 15px; outline: none; margin-bottom: 15px; }
         input[type="text"]:focus { border-color: #38bdf8; }
         button { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: #0284c7; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { background-color: #0369a1; }
-        #status { margin-top: 15px; font-size: 14px; color: #94a3b8; word-break: break-word; }
-        #result-box { margin-top: 20px; display: none; background: #0f172a; padding: 15px; border-radius: 8px; text-align: left; }
-        .info-label { color: #38bdf8; font-size: 12px; font-weight: bold; margin-top: 10px; display: block; }
-        .url-text { font-family: monospace; color: #4ade80; font-size: 12px; margin-bottom: 10px; background: #1e293b; padding: 10px; border-radius: 5px; word-break: break-all; max-height: 80px; overflow-y: auto; }
-        .btn { display: block; text-align: center; background-color: #22c55e; color: #fff; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: bold; margin-top: 8px; }
-        .btn:hover { background-color: #16a34a; }
-        .btn-alt { background-color: #6366f1; }
-        .btn-alt:hover { background-color: #4f46e5; }
+        #status { margin-top: 15px; font-size: 14px; word-break: break-word; }
+        #result-box { margin-top: 20px; display: none; background: #0f172a; padding: 18px; border-radius: 8px; text-align: left; }
+        .label { color: #38bdf8; font-size: 13px; font-weight: bold; display: block; margin-top: 10px; margin-bottom: 4px; }
+        .url-box { font-family: monospace; color: #4ade80; font-size: 12px; background: #1e293b; padding: 10px; border-radius: 6px; word-break: break-all; max-height: 90px; overflow-y: auto; border: 1px solid #334155; }
+        .btn-action { display: block; text-align: center; background-color: #22c55e; color: #fff; text-decoration: none; padding: 12px; border-radius: 6px; font-weight: bold; margin-top: 12px; transition: 0.2s; }
+        .btn-action:hover { background-color: #16a34a; }
+        .btn-sec { background-color: #6366f1; margin-top: 8px; }
+        .btn-sec:hover { background-color: #4f46e5; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Bilibili Video Extractor</h2>
-    <p style="color: #cbd5e1; font-size: 14px;">Bilibili লিঙ্ক বা Short URL দিয়ে এক্সট্র্যাক্ট করুন</p>
+    <h2>Direct Video Extractor</h2>
+    <p>Bilibili বা যেকোনো ভিডিও লিঙ্ক দিয়ে সরাসরি ডাউনলোড করার লিঙ্ক বের করুন</p>
     
-    <input type="text" id="videoUrl" placeholder="https://www.bilibili.tv/en/video/4797455361119744">
-    <button onclick="extractUrl()">ডাইরেক্ট Stream URL বের করুন</button>
+    <input type="text" id="videoUrl" placeholder="যেমন: https://www.bilibili.tv/en/video/4797455361119744">
+    <button onclick="extractDirectUrl()">ডাইরেক্ট ভিডিও লিঙ্ক খুঁজুন</button>
     
     <div id="status"></div>
 
     <div id="result-box">
-        <span class="info-label">ভিডিও স্ট্রিম লিঙ্ক (Video Stream):</span>
-        <div class="url-text" id="videoStreamUrl"></div>
-        <a href="#" id="videoBtn" target="_blank" class="btn">ভিডিও স্ট্রিম ওপেন / ডাউনলোড করুন</a>
+        <span class="label">ভিডিও স্ট্রিম লিঙ্ক (Video File URL):</span>
+        <div class="url-box" id="videoUrlBox"></div>
+        <a href="#" id="downloadVideoBtn" target="_blank" download class="btn-action">🎬 ভিডিও সরাসরি ডাউনলোড / ওপেন করুন</a>
 
-        <span class="info-label" id="audioLabel" style="display:none;">অডিও স্ট্রিম লিঙ্ক (Audio Stream):</span>
-        <div class="url-text" id="audioStreamUrl" style="display:none;"></div>
-        <a href="#" id="audioBtn" target="_blank" class="btn btn-alt" style="display:none;">অডিও স্ট্রিম ডাউনলোড করুন</a>
+        <div id="audioSection" style="display:none;">
+            <span class="label">অডিও স্ট্রিম লিঙ্ক (Audio File URL):</span>
+            <div class="url-box" id="audioUrlBox"></div>
+            <a href="#" id="downloadAudioBtn" target="_blank" download class="btn-action btn-sec">🎵 অডিও আলাদা ডাউনলোড করুন</a>
+        </div>
     </div>
 </div>
 
 <script>
-async function extractUrl() {
+async function extractDirectUrl() {
     const inputUrl = document.getElementById('videoUrl').value.trim();
     const status = document.getElementById('status');
     const resultBox = document.getElementById('result-box');
+    const audioSection = document.getElementById('audioSection');
     
     if (!inputUrl) {
-        status.innerText = "অনুগ্রহ করে একটি Bilibili লিঙ্ক প্রদান করুন!";
+        status.innerText = "অনুগ্রহ করে একটি ভিডিও লিঙ্ক দিন!";
         status.style.color = "#ef4444";
         return;
     }
 
-    status.innerText = "আইডি এবং পেজ ডাটা প্রসেস করা হচ্ছে...";
+    status.innerText = "সার্ভার থেকে ভিডিও ফাইল এক্সট্র্যাক্ট করা হচ্ছে...";
     status.style.color = "#38bdf8";
     resultBox.style.display = "none";
+    audioSection.style.display = "none";
 
-    // Extract Video ID (e.g. 4797455361119744)
+    // Extract ID if Bilibili URL
     const idMatch = inputUrl.match(/video\/(\d+)/);
-    if (!idMatch) {
-        status.innerText = "সঠিক Bilibili Video ID পাওয়া যায়নি। অনুগ্রহ করে ভিডিও পেজের লিঙ্ক দিন।";
-        status.style.color = "#ef4444";
-        return;
-    }
-
-    const videoId = idMatch[1];
+    const videoId = idMatch ? idMatch[1] : null;
 
     try {
-        // Fetch play url using corsproxy
-        const apiUrl = `https://api.bilibili.tv/intl/gateway/web/playurl?s_locale=en_US&platform=web&episode_id=${videoId}&mobi_app=bstar_a`;
-        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(apiUrl);
+        let directVideoUrl = "";
+        let directAudioUrl = "";
 
-        const response = await fetch(proxyUrl);
-        const data = await response.json();
+        if (videoId) {
+            // Method 1: Query Bilibili Global Web API
+            const apiUrl = `https://api.bilibili.tv/intl/gateway/web/playurl?s_locale=en_US&platform=web&episode_id=${videoId}&mobi_app=bstar_a`;
+            const proxyApi = "https://corsproxy.io/?" + encodeURIComponent(apiUrl);
 
-        if (data && data.data && data.data.playurl) {
-            const playurl = data.data.playurl;
-            let videoUrl = "";
-            let audioUrl = "";
+            const res = await fetch(proxyApi);
+            const resData = await res.json();
 
-            // Check for MP4/Single Stream or DASH stream
-            if (playurl.durl && playurl.durl.length > 0) {
-                videoUrl = playurl.durl[0].url;
-            } else if (playurl.dash) {
-                if (playurl.dash.video && playurl.dash.video.length > 0) {
-                    videoUrl = playurl.dash.video[0].base_url || playurl.dash.video[0].baseUrl;
-                }
-                if (playurl.dash.audio && playurl.dash.audio.length > 0) {
-                    audioUrl = playurl.dash.audio[0].base_url || playurl.dash.audio[0].baseUrl;
+            if (resData && resData.data && resData.data.playurl) {
+                const playurl = resData.data.playurl;
+
+                if (playurl.durl && playurl.durl.length > 0) {
+                    directVideoUrl = playurl.durl[0].url;
+                } else if (playurl.dash) {
+                    if (playurl.dash.video && playurl.dash.video.length > 0) {
+                        directVideoUrl = playurl.dash.video[0].base_url || playurl.dash.video[0].baseUrl;
+                    }
+                    if (playurl.dash.audio && playurl.dash.audio.length > 0) {
+                        directAudioUrl = playurl.dash.audio[0].base_url || playurl.dash.audio[0].baseUrl;
+                    }
                 }
             }
+        }
 
-            if (videoUrl) {
-                document.getElementById('videoStreamUrl').innerText = videoUrl;
-                document.getElementById('videoBtn').href = videoUrl;
+        // Method 2: Generic Fallback Parser using Scraping Proxy
+        if (!directVideoUrl) {
+            const rawProxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(inputUrl);
+            const htmlRes = await fetch(rawProxy);
+            const htmlText = await htmlRes.text();
 
-                if (audioUrl) {
-                    document.getElementById('audioLabel').style.display = "block";
-                    document.getElementById('audioStreamUrl').style.display = "block";
-                    document.getElementById('audioStreamUrl').innerText = audioUrl;
-                    
-                    const audioBtn = document.getElementById('audioBtn');
-                    audioBtn.style.display = "block";
-                    audioBtn.href = audioUrl;
-                } else {
-                    document.getElementById('audioLabel').style.display = "none";
-                    document.getElementById('audioStreamUrl').style.display = "none";
-                    document.getElementById('audioBtn').style.display = "none";
-                }
-
-                resultBox.style.display = "block";
-                status.innerText = "সফলভাবে ডাইরেক্ট স্ট্রিম লিংক বের করা হয়েছে!";
-                status.style.color = "#22c55e";
-            } else {
-                throw new Error("No stream URL found in API response");
+            const mp4Match = htmlText.match(/https?:\/\/[^"'\s]+\.(mp4|m3u8)[^"'\s]*/i);
+            if (mp4Match) {
+                directVideoUrl = mp4Match[0].replace(/\\/g, '');
             }
+        }
+
+        if (directVideoUrl) {
+            document.getElementById('videoUrlBox').innerText = directVideoUrl;
+            document.getElementById('downloadVideoBtn').href = directVideoUrl;
+
+            if (directAudioUrl) {
+                audioSection.style.display = "block";
+                document.getElementById('audioUrlBox').innerText = directAudioUrl;
+                document.getElementById('downloadAudioBtn').href = directAudioUrl;
+            }
+
+            resultBox.style.display = "block";
+            status.innerText = "সফলভাবে ডাইরেক্ট ভিডিও ফাইল লিঙ্ক বের করা হয়েছে!";
+            status.style.color = "#22c55e";
         } else {
-            throw new Error("Invalid API structure");
+            throw new Error("ফাইল বের করা যায়নি");
         }
 
     } catch (err) {
         console.error(err);
-        status.innerText = "সরাসরি স্ট্রিম লিঙ্ক বের করা সম্ভব হয়নি। (Bilibili-র সিকিউরিটি প্রোটোকলের কারণে ব্রাউজার প্রক্সি ব্লক করছে)।";
+        status.innerText = "সরাসরি লিঙ্ক বের করা যায়নি। Bilibili-এর মতো প্রটেক্টেড প্ল্যাটফর্ম স্ট্রিমিংকে এনক্রিপ্ট করে রাখে।";
         status.style.color = "#ef4444";
     }
 }
